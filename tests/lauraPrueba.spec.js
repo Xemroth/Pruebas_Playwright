@@ -1,25 +1,42 @@
 const { test, expect, request } = require("@playwright/test");
+const {DB2} = require('../utiles/db');
+const {GooglePage } = require("../page/searchGooglePage");
+const {ResultSearch } = require("../page/resultSearchPage");
+const {WikiPage} = require ("../page/wikiPage");
+
+
 
 
 test("Test de prueba con Google", async ({ page }) => {
-    //localizadores
-    const inputBusqueda = "//input[@class='gLFyf gsfi' and @type='text']";
-    const textH20 = "//span[text()='H2O']";
-    const menuTodos = "div#hdtb-msb";
-    const linkWiki = "//h3[@class='LC20lb MBeuO DKV0Md' and contains(text(),'Wikipedia')]";
-    const logoWiki = ".mw-wiki-logo";
 
+    const searchGoogle = new GooglePage(page);
+    const resultSearch = new ResultSearch(page);
+    const wikiPage = new WikiPage(page);
+    //base de datos
+    const db = new DB2();
+    let urlBD;
 
     await page.goto('https://www.google.com/');
-    await page.locator(inputBusqueda).type("H2O");
-    await page.locator(textH20).click();
-    await page.waitForSelector(menuTodos);
-    await page.locator(linkWiki).first().click();
-    await page.waitForSelector(logoWiki,{delay: 2000});
-    await page.waitForTimeout(3000);
-    
-    const titulo = await page.title();
-    console.log("El titulo seleccionado es: " + titulo);
+    await searchGoogle.searchGoogle();
+    await resultSearch.resultSearch();
 
+    const titulo = await page.title();
+    console.log("El titulo seleccionado es: " + titulo );
+
+    await wikiPage.confirmWiki();
+
+     const url = page.url();
+    db.insertURL(url);
+    console.log("La url insertada en la BD es: "+url);
+
+    await db.getURLP(url).then(results=>{
+        console.log("La url desde BD es: "+results.pageURL) 
+        urlBD = results.pageURL;
+        
+        })
+
+    await page.goto('https://www.google.com/'); 
+    await page.goto(urlBD);
+    await expect(page).toHaveURL(urlBD);
 });
 
