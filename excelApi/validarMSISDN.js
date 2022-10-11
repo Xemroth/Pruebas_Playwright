@@ -28,7 +28,7 @@ exports.ValidarMSISDN = class ValidarMSISDN {
         console.log("El MSISDN pasado por parametros en validarMsisdn() es:  " +msisdn);
         if(msisdn.length!=8)
         return false;
-
+          
         await this.tomsMainPage.menuPrincipal.busquedaNumero();
         await this.page.locator(this.idNro1).type(`${msisdn}`.substring(0, 2));
         await this.page.locator(this.idNro2).type(`${msisdn}`.substring(2, 5));
